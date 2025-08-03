@@ -25,18 +25,32 @@ class DeprecatedPackageDB:
         """Loads database from YAML file."""
         try:
             if self.db_path is None:
-                # Load from package data
-                import pkg_resources
+                # Load from package data using importlib.resources (modern approach)
                 try:
+                    import importlib.resources as resources
                     # Try different package names
-                    package_names = ['deprecated-checker', 'deprecated_checker', 'core']
+                    package_names = ['deprecated_checker', 'core']
                     for package_name in package_names:
                         try:
-                            with pkg_resources.resource_stream(package_name, 'data/deprecated_packages.yaml') as f:
+                            with resources.open_text(package_name, 'data/deprecated_packages.yaml') as f:
                                 self.data = yaml.safe_load(f) or {}
                                 return
                         except Exception:
                             continue
+                    
+                    # Fallback to pkg_resources for older Python versions
+                    try:
+                        import pkg_resources
+                        package_names = ['deprecated-checker', 'deprecated_checker', 'core']
+                        for package_name in package_names:
+                            try:
+                                with pkg_resources.resource_stream(package_name, 'data/deprecated_packages.yaml') as f:
+                                    self.data = yaml.safe_load(f) or {}
+                                    return
+                            except Exception:
+                                continue
+                    except ImportError:
+                        pass
                     
                     # Fallback to relative path
                     data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
