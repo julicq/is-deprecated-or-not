@@ -6,6 +6,7 @@ import yaml
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from packaging import version
+import importlib.resources as pkg_resources
 
 
 class DeprecatedPackageDB:
@@ -13,16 +14,30 @@ class DeprecatedPackageDB:
     
     def __init__(self, db_path: Optional[Path] = None):
         if db_path is None:
-            db_path = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
+            # Try to load from package data first
+            try:
+                from . import data
+                self.db_path = None  # Will load from package
+            except ImportError:
+                # Fallback to file path
+                self.db_path = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
+        else:
+            self.db_path = db_path
         
-        self.db_path = db_path
         self._load_database()
     
     def _load_database(self):
         """Loads database from YAML file."""
         try:
-            with open(self.db_path, 'r', encoding='utf-8') as f:
-                self.data = yaml.safe_load(f) or {}
+            if self.db_path is None:
+                # Load from package data
+                from . import data
+                with pkg_resources.open_text(data, "deprecated_packages.yaml") as f:
+                    self.data = yaml.safe_load(f) or {}
+            else:
+                # Load from file path
+                with open(self.db_path, 'r', encoding='utf-8') as f:
+                    self.data = yaml.safe_load(f) or {}
         except Exception as e:
             print(f"Error loading database: {e}")
             self.data = {}
