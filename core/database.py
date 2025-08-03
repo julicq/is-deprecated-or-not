@@ -27,10 +27,18 @@ class DeprecatedPackageDB:
             if self.db_path is None:
                 # Load from package data
                 import pkg_resources
-                data_file = pkg_resources.resource_filename('deprecated_checker', 'data/deprecated_packages.yaml')
-                print(f"Loading from package data: {data_file}")
-                with open(data_file, 'r', encoding='utf-8') as f:
-                    self.data = yaml.safe_load(f) or {}
+                try:
+                    data_file = pkg_resources.resource_filename('deprecated_checker', 'data/deprecated_packages.yaml')
+                    print(f"Loading from package data: {data_file}")
+                    with open(data_file, 'r', encoding='utf-8') as f:
+                        self.data = yaml.safe_load(f) or {}
+                except Exception as e:
+                    print(f"Failed to load from package data: {e}")
+                    # Fallback to relative path
+                    data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
+                    print(f"Loading from fallback path: {data_file}")
+                    with open(data_file, 'r', encoding='utf-8') as f:
+                        self.data = yaml.safe_load(f) or {}
             else:
                 # Load from file path
                 print(f"Loading from file path: {self.db_path}")
