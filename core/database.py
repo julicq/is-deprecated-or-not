@@ -41,7 +41,14 @@ class DeprecatedPackageDB:
                     # Fallback to pkg_resources for older Python versions
                     try:
                         import pkg_resources
-                        package_names = ['deprecated-checker', 'deprecated_checker', 'core']
+                        # Try to get the distribution and load data directly
+                        dist = pkg_resources.get_distribution('deprecated-checker')
+                        data_content = pkg_resources.resource_string('deprecated-checker', 'data/deprecated_packages.yaml')
+                        self.data = yaml.safe_load(data_content) or {}
+                        return
+                    except Exception:
+                        # Try alternative package names
+                        package_names = ['deprecated_checker', 'core']
                         for package_name in package_names:
                             try:
                                 with pkg_resources.resource_stream(package_name, 'data/deprecated_packages.yaml') as f:
@@ -49,8 +56,6 @@ class DeprecatedPackageDB:
                                     return
                             except Exception:
                                 continue
-                    except ImportError:
-                        pass
                     
                     # Fallback to relative path
                     data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
