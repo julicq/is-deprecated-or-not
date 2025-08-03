@@ -8,7 +8,7 @@ from typing import Dict, List, Optional, Any
 from packaging import version
 import importlib.resources as pkg_resources
 from .data_collector import DataCollector
-from .repository_analyzer import RepositoryAnalyzer
+# from .repository_analyzer import RepositoryAnalyzer  # Not used in current logic
 import logging
 
 # Setup logging
@@ -29,37 +29,19 @@ class DeprecatedPackageDB:
         self._load_database()
     
     def _load_database(self):
-        """Loads database dynamically by analyzing repository dependencies."""
+        """Loads database from static file by default."""
         try:
             if self.db_path is None:
                 # Try to load from static file first (fallback)
                 static_data = self._load_static_database()
                 
-                # If static data is empty or we want fresh data, analyze repository
-                if not static_data or self._should_collect_fresh_data():
-                    logger.info("Analyzing repository dependencies...")
-                    
-                    # Get current working directory as project path
-                    project_path = Path.cwd()
-                    logger.info(f"Analyzing project at: {project_path}")
-                    
-                    # Analyze repository and build database
-                    analyzer = RepositoryAnalyzer()
-                    repository_data = analyzer.analyze_repository(project_path)
-                    
-                    if repository_data:
-                        self.data = repository_data
-                        logger.info(f"Successfully built database with {len(repository_data)} packages from repository")
-                        
-                        # Save the repository data for future use
-                        analyzer.save_database(repository_data)
-                        return
-                    else:
-                        logger.warning("No repository data found, using static data")
-                        self.data = static_data
-                else:
+                # Use static data by default, only analyze repository if explicitly requested
+                if static_data:
                     self.data = static_data
-                    logger.info(f"Using cached data with {len(static_data)} packages")
+                    logger.info(f"Using static data with {len(static_data)} packages")
+                else:
+                    logger.warning("No static data found, database will be empty")
+                    self.data = {}
             else:
                 # Load from specified file path
                 with open(self.db_path, 'r', encoding='utf-8') as f:
@@ -92,19 +74,38 @@ class DeprecatedPackageDB:
                         data = yaml.safe_load(f) or {}
                         logger.info(f"Successfully loaded static database from core directory: {data_file}")
                         return data
+                else:
+                    logger.debug(f"Static database file not found at: {data_file}")
             except Exception as e:
                 logger.debug(f"Failed to load static database from core directory: {e}")
             
             # Method 3: Fallback to relative path
             try:
-                data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
-                with open(data_file, 'r', encoding='utf-8') as f:
-                    data = yaml.safe_load(f) or {}
-                    logger.info(f"Successfully loaded static database from relative path: {data_file}")
-                    return data
+                data_file = Path(__file__).parent / "deprecated_packages.yaml"
+                if data_file.exists():
+                    with open(data_file, 'r', encoding='utf-8') as f:
+                        data = yaml.safe_load(f) or {}
+                        logger.info(f"Successfully loaded static database from relative path: {data_file}")
+                        return data
+                else:
+                    logger.debug(f"Static database file not found at: {data_file}")
             except Exception as e:
                 logger.debug(f"Failed to load static database from relative path: {e}")
             
+            # Method 4: Try data directory
+            try:
+                data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
+                if data_file.exists():
+                    with open(data_file, 'r', encoding='utf-8') as f:
+                        data = yaml.safe_load(f) or {}
+                        logger.info(f"Successfully loaded static database from data directory: {data_file}")
+                        return data
+                else:
+                    logger.debug(f"Static database file not found at: {data_file}")
+            except Exception as e:
+                logger.debug(f"Failed to load static database from data directory: {e}")
+            
+            logger.warning("No static database file found in any location")
             return {}
         except Exception as e:
             logger.error(f"Error loading static database: {e}")
