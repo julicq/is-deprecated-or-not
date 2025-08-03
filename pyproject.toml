@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deprecated-checker"
-version = "1.0.2"
+version = "1.0.3"
 description = "Tool for checking deprecated dependencies in Python projects and suggesting alternatives"
 readme = "README.md"
 license = "MIT"
@@ -37,6 +37,7 @@ dependencies = [
     "requests>=2.28.0",
     "packaging>=23.0",
     "toml>=0.10.0",
+    "schedule>=1.2.0",
 ]
 
 [project.optional-dependencies]
