@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run tests
+      run: |
+        python test_cli_comprehensive.py
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## What's Changed
+          
+          ### Features
+          - CLI interface with Rich output
+          - Database of deprecated packages
+          - Multiple export formats (JSON, YAML, CSV)
+          - Scheduler for automatic updates
+          - Comprehensive testing suite
+          - Complete documentation
+          
+          ### Installation
+          ```bash
+          pip install -r requirements.txt
+          ```
+          
+          ### Usage
+          ```bash
+          # Check project for deprecated dependencies
+          python utils/cli.py check --path /path/to/project
+          
+          # Search for specific package
+          python utils/cli.py search requests
+          
+          # Export database
+          python utils/cli.py export-db --format json
+          ```
+        draft: false
+        prerelease: false 
