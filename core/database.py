@@ -31,8 +31,9 @@ class DeprecatedPackageDB:
         try:
             if self.db_path is None:
                 # Load from package data
-                from . import data
-                with pkg_resources.open_text(data, "deprecated_packages.yaml") as f:
+                import pkg_resources
+                data_file = pkg_resources.resource_filename('core.data', 'deprecated_packages.yaml')
+                with open(data_file, 'r', encoding='utf-8') as f:
                     self.data = yaml.safe_load(f) or {}
             else:
                 # Load from file path
