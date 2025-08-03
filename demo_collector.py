@@ -37,17 +37,17 @@ def demo_data_collection():
         # Demonstrate collection from PyPI
         task1 = progress.add_task("Collection from PyPI...", total=None)
         time.sleep(2)  # Simulate work
-        progress.update(task1, description="✅ Данные из PyPI собраны")
+        progress.update(task1, description="✅ Data from PyPI collected")
         
         # Demonstrate collection from GitHub
         task2 = progress.add_task("Collection from GitHub...", total=None)
         time.sleep(1.5)
-        progress.update(task2, description="✅ Данные из GitHub собраны")
+        progress.update(task2, description="✅ Data from GitHub collected")
         
         # Demonstrate collection from security advisories
         task3 = progress.add_task("Collection from security advisories...", total=None)
         time.sleep(1)
-        progress.update(task3, description="✅ Данные из security advisories собраны")
+        progress.update(task3, description="✅ Data from security advisories collected")
     
     console.print("\n📊 Data collection statistics:")
     

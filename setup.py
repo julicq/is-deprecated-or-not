@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Setup для Deprecated Checker.
+Setup for Deprecated Checker.
 """
 
 from setuptools import setup, find_packages

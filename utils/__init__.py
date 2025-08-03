@@ -1,3 +1,3 @@
 """
-Утилиты для CLI и форматирования.
+Utilities for CLI and formatting.
 """ 
