@@ -202,18 +202,6 @@ class RepositoryAnalyzer:
         """Gets alternatives for a deprecated package."""
         # Knowledge base of alternatives
         alternatives_db = {
-            "requests": [
-                {
-                    "name": "httpx",
-                    "reason": "Modern HTTP library with async/await support",
-                    "migration_guide": "https://www.python-httpx.org/migration/"
-                },
-                {
-                    "name": "aiohttp",
-                    "reason": "Async HTTP library",
-                    "migration_guide": "https://docs.aiohttp.org/"
-                }
-            ],
             "urllib3": [
                 {
                     "name": "urllib3",
@@ -228,18 +216,7 @@ class RepositoryAnalyzer:
                     "migration_guide": "https://cryptography.io/"
                 }
             ],
-            "pyyaml": [
-                {
-                    "name": "ruamel.yaml",
-                    "reason": "More secure and functional YAML library",
-                    "migration_guide": "https://yaml.readthedocs.io/"
-                },
-                {
-                    "name": "omegaconf",
-                    "reason": "Modern configuration library",
-                    "migration_guide": "https://omegaconf.readthedocs.io/"
-                }
-            ],
+
             "jinja2": [
                 {
                     "name": "jinja2",

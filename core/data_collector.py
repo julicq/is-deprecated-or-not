@@ -66,15 +66,98 @@ class DataCollector:
         """Collects deprecated packages from PyPI API."""
         data = {}
         
-        # List of known deprecated packages to check
+        # Extended list of known deprecated packages to check
         packages_to_check = [
-            "requests", "urllib3", "cryptography", "pyyaml", "jinja2",
-            "flask", "celery", "redis", "psycopg2", "django-cors-headers",
-            "six", "future", "configparser", "pathlib2", "typing-extensions"
+            # HTTP Libraries
+            "requests", "urllib3", "httplib2", "urllib2",
+            
+            # Security & Crypto
+            "cryptography", "pycrypto", "cryptodome", "hashlib",
+            
+            # Web Frameworks
+            "flask", "django", "bottle", "webpy", "cherrypy",
+            
+            # Database
+            "psycopg2", "mysql-connector", "sqlite3", "pymongo",
+            
+            # Data Processing
+            "pandas", "numpy", "scipy", "matplotlib", "seaborn",
+            
+            # Configuration
+            "pyyaml", "configparser", "ini", "json5",
+            
+            # Utilities
+            "six", "future", "pathlib2", "typing-extensions", "enum34",
+            
+            # Testing
+            "nose", "pytest-cov", "coverage",
+            
+            # Development Tools
+            "setuptools", "distutils", "pip", "wheel",
+            
+            # Async
+            "asyncio", "aiohttp", "tornado", "twisted",
+            
+            # Serialization
+            "pickle", "marshal", "shelve",
+            
+            # Networking
+            "socket", "ftplib", "smtplib", "poplib",
+            
+            # Image Processing
+            "PIL", "Pillow", "opencv-python",
+            
+            # Machine Learning
+            "sklearn", "tensorflow", "keras", "theano",
+            
+            # Documentation
+            "sphinx", "docutils", "mkdocs",
+            
+            # Deployment
+            "fabric", "ansible", "salt",
+            
+            # Monitoring
+            "psutil", "pywin32", "pyserial",
+            
+            # GUI
+            "tkinter", "wx", "pyqt", "kivy",
+            
+            # Audio/Video
+            "pygame", "pyaudio", "opencv",
+            
+            # Compression
+            "zipfile", "tarfile", "gzip", "bz2",
+            
+            # Text Processing
+            "re", "string", "unicodedata",
+            
+            # Date/Time
+            "datetime", "time", "calendar",
+            
+            # Math
+            "math", "random", "statistics",
+            
+            # System
+            "os", "sys", "subprocess", "shutil",
+            
+            # Network
+            "urllib", "http", "email", "smtplib",
+            
+            # Data
+            "csv", "json", "xml", "sqlite3",
+            
+            # Other
+            "threading", "multiprocessing", "concurrent.futures",
+            "logging", "warnings", "traceback", "inspect",
+            "collections", "itertools", "functools", "operator"
         ]
         
-        for package in packages_to_check:
+        logger.info(f"Checking {len(packages_to_check)} packages on PyPI...")
+        
+        for i, package in enumerate(packages_to_check, 1):
             try:
+                logger.info(f"Checking package {i}/{len(packages_to_check)}: {package}")
+                
                 # Get package information from PyPI
                 response = requests.get(
                     f"https://pypi.org/pypi/{package}/json",
@@ -92,14 +175,24 @@ class DataCollector:
                             "reason": self._extract_deprecation_reason(package_data),
                             "alternatives": alternatives,
                             "source": "pypi",
-                            "last_updated": datetime.now().isoformat()
+                            "last_updated": datetime.now().isoformat(),
+                            "package_info": {
+                                "latest_version": package_data.get("info", {}).get("version", ""),
+                                "summary": package_data.get("info", {}).get("summary", ""),
+                                "home_page": package_data.get("info", {}).get("home_page", ""),
+                                "project_url": package_data.get("info", {}).get("project_url", "")
+                            }
                         }
+                        logger.info(f"✓ Found deprecated package: {package}")
+                    else:
+                        logger.debug(f"Package {package} is not deprecated")
                 
                 time.sleep(0.1)  # Don't overload API
                 
             except Exception as e:
                 logger.warning(f"Error checking {package}: {e}")
         
+        logger.info(f"PyPI collection complete. Found {len(data)} deprecated packages")
         return data
     
     def _collect_from_github(self) -> Dict[str, Any]:
@@ -127,42 +220,7 @@ class DataCollector:
     def _collect_manual_data(self) -> Dict[str, Any]:
         """Collects manually curated data about deprecated packages."""
         return {
-            "requests": {
-                "deprecated_since": "2023-01-01",
-                "reason": "Recommended to use httpx for better performance and async support",
-                "alternatives": [
-                    {
-                        "name": "httpx",
-                        "reason": "Modern HTTP library with async/await support",
-                        "migration_guide": "https://www.python-httpx.org/migration/"
-                    },
-                    {
-                        "name": "aiohttp",
-                        "reason": "Async HTTP library",
-                        "migration_guide": "https://docs.aiohttp.org/"
-                    }
-                ],
-                "source": "manual",
-                "last_updated": datetime.now().isoformat()
-            },
-            "pyyaml": {
-                "deprecated_since": "2023-01-01",
-                "reason": "Recommended to use more secure alternatives",
-                "alternatives": [
-                    {
-                        "name": "ruamel.yaml",
-                        "reason": "More secure and functional YAML library",
-                        "migration_guide": "https://yaml.readthedocs.io/"
-                    },
-                    {
-                        "name": "omegaconf",
-                        "reason": "Modern configuration library",
-                        "migration_guide": "https://omegaconf.readthedocs.io/"
-                    }
-                ],
-                "source": "manual",
-                "last_updated": datetime.now().isoformat()
-            },
+            # HTTP Libraries
             "urllib3": {
                 "deprecated_since": "2022-12-01",
                 "reason": "Old versions have vulnerabilities",
@@ -176,6 +234,8 @@ class DataCollector:
                 "source": "manual",
                 "last_updated": datetime.now().isoformat()
             },
+            
+            # Security & Crypto
             "cryptography": {
                 "deprecated_since": "2023-03-01",
                 "reason": "Old versions have critical vulnerabilities",
@@ -189,6 +249,21 @@ class DataCollector:
                 "source": "manual",
                 "last_updated": datetime.now().isoformat()
             },
+            "pycrypto": {
+                "deprecated_since": "2018-01-01",
+                "reason": "No longer maintained, security vulnerabilities",
+                "alternatives": [
+                    {
+                        "name": "cryptography",
+                        "reason": "Modern cryptographic library",
+                        "migration_guide": "https://cryptography.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Web Frameworks
             "jinja2": {
                 "deprecated_since": "2023-02-01",
                 "reason": "Old versions have performance issues",
@@ -220,6 +295,215 @@ class DataCollector:
                 "source": "manual",
                 "last_updated": datetime.now().isoformat()
             },
+            "bottle": {
+                "deprecated_since": "2022-01-01",
+                "reason": "No longer actively maintained",
+                "alternatives": [
+                    {
+                        "name": "fastapi",
+                        "reason": "Modern async web framework",
+                        "migration_guide": "https://fastapi.tiangolo.com/"
+                    },
+                    {
+                        "name": "flask",
+                        "reason": "Lightweight web framework",
+                        "migration_guide": "https://flask.palletsprojects.com/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Database
+            "psycopg2": {
+                "deprecated_since": "2023-03-01",
+                "reason": "Recommended to use psycopg3",
+                "alternatives": [
+                    {
+                        "name": "psycopg",
+                        "reason": "Modern PostgreSQL adapter",
+                        "migration_guide": "https://www.psycopg.org/"
+                    },
+                    {
+                        "name": "asyncpg",
+                        "reason": "Async PostgreSQL driver",
+                        "migration_guide": "https://asyncpg.readthedocs.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Utilities
+            "six": {
+                "deprecated_since": "2020-01-01",
+                "reason": "Python 2/3 compatibility no longer needed",
+                "alternatives": [
+                    {
+                        "name": "builtins",
+                        "reason": "Use native Python 3 features",
+                        "migration_guide": "https://docs.python.org/3/library/builtins.html"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "future": {
+                "deprecated_since": "2020-01-01",
+                "reason": "Python 2/3 compatibility no longer needed",
+                "alternatives": [
+                    {
+                        "name": "builtins",
+                        "reason": "Use native Python 3 features",
+                        "migration_guide": "https://docs.python.org/3/library/builtins.html"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "pathlib2": {
+                "deprecated_since": "2019-01-01",
+                "reason": "pathlib is now in standard library",
+                "alternatives": [
+                    {
+                        "name": "pathlib",
+                        "reason": "Use standard library pathlib",
+                        "migration_guide": "https://docs.python.org/3/library/pathlib.html"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "enum34": {
+                "deprecated_since": "2019-01-01",
+                "reason": "enum is now in standard library",
+                "alternatives": [
+                    {
+                        "name": "enum",
+                        "reason": "Use standard library enum",
+                        "migration_guide": "https://docs.python.org/3/library/enum.html"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Testing
+            "nose": {
+                "deprecated_since": "2018-01-01",
+                "reason": "No longer maintained",
+                "alternatives": [
+                    {
+                        "name": "pytest",
+                        "reason": "Modern testing framework",
+                        "migration_guide": "https://docs.pytest.org/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Development Tools
+            "distutils": {
+                "deprecated_since": "2021-01-01",
+                "reason": "Deprecated in favor of setuptools",
+                "alternatives": [
+                    {
+                        "name": "setuptools",
+                        "reason": "Modern package management",
+                        "migration_guide": "https://setuptools.pypa.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Async
+            "tornado": {
+                "deprecated_since": "2022-01-01",
+                "reason": "No longer actively maintained",
+                "alternatives": [
+                    {
+                        "name": "fastapi",
+                        "reason": "Modern async web framework",
+                        "migration_guide": "https://fastapi.tiangolo.com/"
+                    },
+                    {
+                        "name": "aiohttp",
+                        "reason": "Async HTTP library",
+                        "migration_guide": "https://docs.aiohttp.org/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Image Processing
+            "PIL": {
+                "deprecated_since": "2011-01-01",
+                "reason": "Replaced by Pillow",
+                "alternatives": [
+                    {
+                        "name": "Pillow",
+                        "reason": "Fork of PIL with active maintenance",
+                        "migration_guide": "https://pillow.readthedocs.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Machine Learning
+            "theano": {
+                "deprecated_since": "2017-01-01",
+                "reason": "No longer maintained",
+                "alternatives": [
+                    {
+                        "name": "tensorflow",
+                        "reason": "Modern deep learning framework",
+                        "migration_guide": "https://www.tensorflow.org/"
+                    },
+                    {
+                        "name": "pytorch",
+                        "reason": "Modern deep learning framework",
+                        "migration_guide": "https://pytorch.org/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Documentation
+            "docutils": {
+                "deprecated_since": "2022-01-01",
+                "reason": "No longer actively maintained",
+                "alternatives": [
+                    {
+                        "name": "sphinx",
+                        "reason": "Modern documentation generator",
+                        "migration_guide": "https://www.sphinx-doc.org/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Deployment
+            "fabric": {
+                "deprecated_since": "2020-01-01",
+                "reason": "No longer actively maintained",
+                "alternatives": [
+                    {
+                        "name": "ansible",
+                        "reason": "Modern automation platform",
+                        "migration_guide": "https://www.ansible.com/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            
+            # Other
             "celery": {
                 "deprecated_since": "2023-05-01",
                 "reason": "Old versions have performance issues",
@@ -246,24 +530,6 @@ class DataCollector:
                         "name": "redis",
                         "reason": "Update to version 4.5+",
                         "migration_guide": "https://redis.io/"
-                    }
-                ],
-                "source": "manual",
-                "last_updated": datetime.now().isoformat()
-            },
-            "psycopg2": {
-                "deprecated_since": "2023-03-01",
-                "reason": "Recommended to use psycopg3",
-                "alternatives": [
-                    {
-                        "name": "psycopg",
-                        "reason": "Modern PostgreSQL adapter",
-                        "migration_guide": "https://www.psycopg.org/"
-                    },
-                    {
-                        "name": "asyncpg",
-                        "reason": "Async PostgreSQL driver",
-                        "migration_guide": "https://asyncpg.readthedocs.io/"
                     }
                 ],
                 "source": "manual",

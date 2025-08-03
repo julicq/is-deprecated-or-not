@@ -112,9 +112,9 @@ class DeprecatedPackageDB:
     
     def _should_collect_fresh_data(self) -> bool:
         """Determines if we should collect fresh data."""
-        # For now, always collect fresh data
+        # For now, use static data by default
         # In the future, this could check cache age, user preference, etc.
-        return True
+        return False
     
     def _save_dynamic_data(self, data: Dict[str, Any]) -> None:
         """Saves dynamically collected data to cache."""

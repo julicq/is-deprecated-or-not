@@ -3,6 +3,7 @@ CLI interface for deprecated dependencies checker.
 """
 
 import sys
+import yaml
 from pathlib import Path
 from typing import Optional
 import typer
@@ -18,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.checker import DeprecatedChecker
 from core.data_collector import DataCollector
 from core.scheduler import DatabaseScheduler, ManualUpdater, UpdateConfig
+from core.repository_analyzer import RepositoryAnalyzer
 
 
 app = typer.Typer(
@@ -253,6 +255,81 @@ def search(
 
 
 @app.command()
+def analyze_repository(
+    path: Optional[Path] = typer.Option(
+        None,
+        "--path", "-p",
+        help="Path to project for analysis (default: current directory)"
+    ),
+    save: bool = typer.Option(
+        False,
+        "--save", "-s",
+        help="Save analysis results to cache"
+    )
+):
+    """Analyzes repository dependencies and builds dynamic database."""
+    
+    # Define project path
+    project_path = path or Path.cwd()
+    
+    if not project_path.exists():
+        console.print(f"[red]Error: Path {project_path} does not exist[/red]")
+        sys.exit(1)
+    
+    # Show progress
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console
+    ) as progress:
+        task = progress.add_task("Analyzing repository dependencies...", total=None)
+        
+        try:
+            # Create analyzer and analyze repository
+            analyzer = RepositoryAnalyzer()
+            database = analyzer.analyze_repository(project_path)
+            
+            progress.update(task, description="Generating report...")
+            
+            # Display results
+            if database:
+                console.print(f"[green]✓ Analysis complete! Found {len(database)} deprecated packages[/green]")
+                
+                # Create table
+                table = Table(title="Repository Analysis Results")
+                table.add_column("Package", style="cyan")
+                table.add_column("Deprecated since", style="green")
+                table.add_column("Reason", style="yellow")
+                table.add_column("Source", style="blue")
+                
+                # Add data
+                for package_name, package_data in database.items():
+                    deprecated_since = package_data.get("deprecated_since", "unknown")
+                    reason = package_data.get("reason", "not specified")
+                    source = package_data.get("source", "unknown")
+                    
+                    table.add_row(
+                        package_name,
+                        deprecated_since,
+                        reason,
+                        source
+                    )
+                
+                console.print(table)
+                
+                # Save if requested
+                if save:
+                    analyzer.save_database(database)
+                    console.print("[green]✓ Analysis results saved to cache[/green]")
+            else:
+                console.print("[yellow]No deprecated packages found in repository[/yellow]")
+                
+        except Exception as e:
+            console.print(f"[red]Error: {e}[/red]")
+            sys.exit(1)
+
+
+@app.command()
 def update_db(
     source: Optional[str] = typer.Option(
         None,
@@ -263,6 +340,11 @@ def update_db(
         False,
         "--force", "-f",
         help="Force immediate update"
+    ),
+    comprehensive: bool = typer.Option(
+        False,
+        "--comprehensive", "-c",
+        help="Perform comprehensive update with all known packages"
     )
 ):
     """Updates the deprecated packages database."""
@@ -272,7 +354,45 @@ def update_db(
         console.print("Available sources: pypi, manual, github, security_advisories, all")
         return
     
-    if source == "all" or source is None:
+    if comprehensive:
+        console.print("[yellow]Starting comprehensive database update...[/yellow]")
+        console.print("This will check hundreds of packages and may take several minutes.")
+        
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            task = progress.add_task("Updating comprehensive database...", total=None)
+            
+            try:
+                # Create comprehensive collector
+                collector = DataCollector()
+                all_data = collector.collect_all_data()
+                
+                # Save comprehensive database
+                output_path = Path(__file__).parent.parent / "data" / "comprehensive_deprecated_packages.yaml"
+                output_path.parent.mkdir(exist_ok=True)
+                
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    yaml.dump(all_data, f, default_flow_style=False, allow_unicode=True)
+                
+                console.print(f"[green]✓ Comprehensive database updated successfully![/green]")
+                console.print(f"[green]Found {len(all_data)} deprecated packages[/green]")
+                console.print(f"[green]Saved to: {output_path}[/green]")
+                
+                # Show statistics
+                stats = collector.get_statistics()
+                console.print(f"\n[blue]Statistics:[/blue]")
+                console.print(f"  Total packages checked: {stats.get('total_packages', 'unknown')}")
+                console.print(f"  Deprecated packages found: {len(all_data)}")
+                console.print(f"  Sources used: {', '.join(stats.get('sources', []))}")
+                
+            except Exception as e:
+                console.print(f"[red]Error during comprehensive update: {e}[/red]")
+                sys.exit(1)
+    
+    elif source == "all" or source is None:
         # Update from all sources
         console.print("Updating database from all sources...")
         collector = DataCollector()
