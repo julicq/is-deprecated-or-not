@@ -1,5 +1,5 @@
 """
-Database of deprecated packages and their alternatives.
+Dynamic database of deprecated packages and their alternatives.
 """
 
 import yaml
@@ -7,6 +7,13 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 from packaging import version
 import importlib.resources as pkg_resources
+from .data_collector import DataCollector
+from .repository_analyzer import RepositoryAnalyzer
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class DeprecatedPackageDB:
@@ -22,114 +29,106 @@ class DeprecatedPackageDB:
         self._load_database()
     
     def _load_database(self):
-        """Loads database from YAML file."""
+        """Loads database dynamically by analyzing repository dependencies."""
         try:
             if self.db_path is None:
-                # Method 1: Try importlib.resources with correct package structure
-                try:
-                    import importlib.resources as resources
-                    # Try to load from the core module
-                    try:
-                        with resources.open_text('core', 'deprecated_packages.yaml') as f:
-                            self.data = yaml.safe_load(f) or {}
-                            print(f"Successfully loaded database using importlib.resources from core")
-                            return
-                    except Exception as e:
-                        print(f"Failed to load from core using importlib.resources: {e}")
+                # Try to load from static file first (fallback)
+                static_data = self._load_static_database()
+                
+                # If static data is empty or we want fresh data, analyze repository
+                if not static_data or self._should_collect_fresh_data():
+                    logger.info("Analyzing repository dependencies...")
+                    
+                    # Get current working directory as project path
+                    project_path = Path.cwd()
+                    logger.info(f"Analyzing project at: {project_path}")
+                    
+                    # Analyze repository and build database
+                    analyzer = RepositoryAnalyzer()
+                    repository_data = analyzer.analyze_repository(project_path)
+                    
+                    if repository_data:
+                        self.data = repository_data
+                        logger.info(f"Successfully built database with {len(repository_data)} packages from repository")
                         
-                        # Try alternative approach - load from the core directory
-                        try:
-                            import core
-                            core_dir = Path(core.__file__).parent
-                            data_file = core_dir / "deprecated_packages.yaml"
-                            if data_file.exists():
-                                with open(data_file, 'r', encoding='utf-8') as f:
-                                    self.data = yaml.safe_load(f) or {}
-                                    print(f"Successfully loaded database from core directory: {data_file}")
-                                    return
-                        except Exception as e:
-                            print(f"Failed to load from core directory: {e}")
-                            
-                except ImportError:
-                    print("importlib.resources not available")
-                
-                # Method 2: Try pkg_resources (for older Python versions)
-                try:
-                    import pkg_resources
-                    try:
-                        dist = pkg_resources.get_distribution('deprecated-checker')
-                        data_content = pkg_resources.resource_string('deprecated-checker', 'data/deprecated_packages.yaml')
-                        self.data = yaml.safe_load(data_content) or {}
-                        print("Successfully loaded database using pkg_resources.get_distribution")
+                        # Save the repository data for future use
+                        analyzer.save_database(repository_data)
                         return
-                    except Exception as e:
-                        print(f"Failed to load using pkg_resources.get_distribution: {e}")
-                        
-                        # Try alternative package names with pkg_resources
-                        package_names = ['deprecated_checker', 'core']
-                        for package_name in package_names:
-                            try:
-                                with pkg_resources.resource_stream(package_name, 'data/deprecated_packages.yaml') as f:
-                                    self.data = yaml.safe_load(f) or {}
-                                    print(f"Successfully loaded database using pkg_resources from {package_name}")
-                                    return
-                            except Exception as e:
-                                print(f"Failed to load from {package_name} using pkg_resources: {e}")
-                                continue
-                except ImportError:
-                    print("pkg_resources not available")
-                
-                # Method 3: Try to find the file in the installed package location
-                try:
-                    import sys
-                    for path in sys.path:
-                        if 'site-packages' in path or 'dist-packages' in path:
-                            # Look for the package directory
-                            package_dir = Path(path) / "deprecated_checker"
-                            if package_dir.exists():
-                                data_file = package_dir / "data" / "deprecated_packages.yaml"
-                                if data_file.exists():
-                                    with open(data_file, 'r', encoding='utf-8') as f:
-                                        self.data = yaml.safe_load(f) or {}
-                                        print(f"Successfully loaded database from installed package: {data_file}")
-                                        return
-                except Exception as e:
-                    print(f"Failed to load from installed package: {e}")
-                
-                # Method 4: Fallback to relative path (for development)
-                try:
-                    data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
-                    with open(data_file, 'r', encoding='utf-8') as f:
-                        self.data = yaml.safe_load(f) or {}
-                        print(f"Successfully loaded database from relative path: {data_file}")
-                        return
-                except Exception as e:
-                    print(f"Failed to load from relative path: {e}")
-                
-                # Method 5: Try to find the file in site-packages
-                try:
-                    import site
-                    for site_dir in site.getsitepackages():
-                        data_file = Path(site_dir) / "data" / "deprecated_packages.yaml"
-                        if data_file.exists():
-                            with open(data_file, 'r', encoding='utf-8') as f:
-                                self.data = yaml.safe_load(f) or {}
-                                print(f"Successfully loaded database from site-packages: {data_file}")
-                                return
-                except Exception as e:
-                    print(f"Failed to load from site-packages: {e}")
-                
-                # If all methods fail, create empty database
-                print("All loading methods failed, creating empty database")
-                self.data = {}
+                    else:
+                        logger.warning("No repository data found, using static data")
+                        self.data = static_data
+                else:
+                    self.data = static_data
+                    logger.info(f"Using cached data with {len(static_data)} packages")
             else:
-                # Load from file path
+                # Load from specified file path
                 with open(self.db_path, 'r', encoding='utf-8') as f:
                     self.data = yaml.safe_load(f) or {}
-                    print(f"Successfully loaded database from specified path: {self.db_path}")
+                    logger.info(f"Successfully loaded database from specified path: {self.db_path}")
         except Exception as e:
-            print(f"Error loading database: {e}")
+            logger.error(f"Error loading database: {e}")
             self.data = {}
+    
+    def _load_static_database(self) -> Dict[str, Any]:
+        """Loads static database from YAML file as fallback."""
+        try:
+            # Method 1: Try importlib.resources with correct package structure
+            try:
+                import importlib.resources as resources
+                with resources.open_text('core', 'deprecated_packages.yaml') as f:
+                    data = yaml.safe_load(f) or {}
+                    logger.info("Successfully loaded static database using importlib.resources from core")
+                    return data
+            except Exception as e:
+                logger.debug(f"Failed to load static database using importlib.resources: {e}")
+            
+            # Method 2: Try to load from core directory
+            try:
+                import core
+                core_dir = Path(core.__file__).parent
+                data_file = core_dir / "deprecated_packages.yaml"
+                if data_file.exists():
+                    with open(data_file, 'r', encoding='utf-8') as f:
+                        data = yaml.safe_load(f) or {}
+                        logger.info(f"Successfully loaded static database from core directory: {data_file}")
+                        return data
+            except Exception as e:
+                logger.debug(f"Failed to load static database from core directory: {e}")
+            
+            # Method 3: Fallback to relative path
+            try:
+                data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
+                with open(data_file, 'r', encoding='utf-8') as f:
+                    data = yaml.safe_load(f) or {}
+                    logger.info(f"Successfully loaded static database from relative path: {data_file}")
+                    return data
+            except Exception as e:
+                logger.debug(f"Failed to load static database from relative path: {e}")
+            
+            return {}
+        except Exception as e:
+            logger.error(f"Error loading static database: {e}")
+            return {}
+    
+    def _should_collect_fresh_data(self) -> bool:
+        """Determines if we should collect fresh data."""
+        # For now, always collect fresh data
+        # In the future, this could check cache age, user preference, etc.
+        return True
+    
+    def _save_dynamic_data(self, data: Dict[str, Any]) -> None:
+        """Saves dynamically collected data to cache."""
+        try:
+            cache_dir = Path(__file__).parent.parent / "cache"
+            cache_dir.mkdir(exist_ok=True)
+            
+            cache_file = cache_dir / "dynamic_database.yaml"
+            with open(cache_file, 'w', encoding='utf-8') as f:
+                yaml.dump(data, f, default_flow_style=False, allow_unicode=True)
+            
+            logger.info(f"Saved dynamic data to cache: {cache_file}")
+        except Exception as e:
+            logger.error(f"Failed to save dynamic data: {e}")
     
     def is_deprecated(self, package_name: str, package_version: str = "") -> bool:
         """Checks if package is deprecated."""

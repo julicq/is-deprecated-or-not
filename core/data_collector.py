@@ -145,6 +145,130 @@ class DataCollector:
                 "source": "manual",
                 "last_updated": datetime.now().isoformat()
             },
+            "pyyaml": {
+                "deprecated_since": "2023-01-01",
+                "reason": "Recommended to use more secure alternatives",
+                "alternatives": [
+                    {
+                        "name": "ruamel.yaml",
+                        "reason": "More secure and functional YAML library",
+                        "migration_guide": "https://yaml.readthedocs.io/"
+                    },
+                    {
+                        "name": "omegaconf",
+                        "reason": "Modern configuration library",
+                        "migration_guide": "https://omegaconf.readthedocs.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "urllib3": {
+                "deprecated_since": "2022-12-01",
+                "reason": "Old versions have vulnerabilities",
+                "alternatives": [
+                    {
+                        "name": "urllib3",
+                        "reason": "Update to version 2.0+",
+                        "migration_guide": "https://urllib3.readthedocs.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "cryptography": {
+                "deprecated_since": "2023-03-01",
+                "reason": "Old versions have critical vulnerabilities",
+                "alternatives": [
+                    {
+                        "name": "cryptography",
+                        "reason": "Update to version 41.0+",
+                        "migration_guide": "https://cryptography.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "jinja2": {
+                "deprecated_since": "2023-02-01",
+                "reason": "Old versions have performance issues",
+                "alternatives": [
+                    {
+                        "name": "jinja2",
+                        "reason": "Update to version 3.1+",
+                        "migration_guide": "https://jinja.palletsprojects.com/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "flask": {
+                "deprecated_since": "2023-04-01",
+                "reason": "Recommended to use modern alternatives",
+                "alternatives": [
+                    {
+                        "name": "fastapi",
+                        "reason": "Modern async web framework",
+                        "migration_guide": "https://fastapi.tiangolo.com/"
+                    },
+                    {
+                        "name": "starlette",
+                        "reason": "Lightweight ASGI framework",
+                        "migration_guide": "https://www.starlette.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "celery": {
+                "deprecated_since": "2023-05-01",
+                "reason": "Old versions have performance issues",
+                "alternatives": [
+                    {
+                        "name": "celery",
+                        "reason": "Update to version 5.3+",
+                        "migration_guide": "https://docs.celeryproject.org/"
+                    },
+                    {
+                        "name": "rq",
+                        "reason": "Simple job queue",
+                        "migration_guide": "https://python-rq.org/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "redis": {
+                "deprecated_since": "2023-01-01",
+                "reason": "Old versions have security issues",
+                "alternatives": [
+                    {
+                        "name": "redis",
+                        "reason": "Update to version 4.5+",
+                        "migration_guide": "https://redis.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
+            "psycopg2": {
+                "deprecated_since": "2023-03-01",
+                "reason": "Recommended to use psycopg3",
+                "alternatives": [
+                    {
+                        "name": "psycopg",
+                        "reason": "Modern PostgreSQL adapter",
+                        "migration_guide": "https://www.psycopg.org/"
+                    },
+                    {
+                        "name": "asyncpg",
+                        "reason": "Async PostgreSQL driver",
+                        "migration_guide": "https://asyncpg.readthedocs.io/"
+                    }
+                ],
+                "source": "manual",
+                "last_updated": datetime.now().isoformat()
+            },
             "django-cors-headers": {
                 "deprecated_since": "2023-06-01",
                 "reason": "Old versions have security issues",
@@ -179,8 +303,17 @@ class DataCollector:
     def _is_deprecated_package(self, package_data: Dict[str, Any]) -> bool:
         """Checks if package is deprecated based on PyPI data."""
         # Check different indicators of deprecation
-        description = package_data.get("info", {}).get("summary", "").lower()
-        keywords = package_data.get("info", {}).get("keywords", "").lower()
+        description = package_data.get("info", {}).get("summary", "")
+        keywords = package_data.get("info", {}).get("keywords", "")
+        
+        # Handle None values
+        if description is None:
+            description = ""
+        if keywords is None:
+            keywords = ""
+        
+        description = description.lower()
+        keywords = keywords.lower()
         
         deprecated_indicators = [
             "deprecated", "deprecation", "discontinued", "legacy",
@@ -202,6 +335,10 @@ class DataCollector:
     def _extract_deprecation_reason(self, package_data: Dict[str, Any]) -> str:
         """Extracts deprecation reason from package data."""
         description = package_data.get("info", {}).get("summary", "")
+        
+        # Handle None values
+        if description is None:
+            description = ""
         
         # Try to find reason of deprecation in description
         if "deprecated" in description.lower():
