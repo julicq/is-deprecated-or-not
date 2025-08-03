@@ -7,6 +7,7 @@ include TESTING_GUIDE.md
 
 recursive-include data *.yaml *.yml *.json
 recursive-include config *.yaml *.yml *.json
+recursive-include core *.yaml *.yml *.json
 
 global-exclude *.pyc
 global-exclude __pycache__
