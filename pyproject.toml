@@ -4,21 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deprecated-checker"
-version = "1.0.0"
+version = "1.0.1"
 description = "Tool for checking deprecated dependencies in Python projects and suggesting alternatives"
 readme = "README.md"
-license = {text = "MIT"}
+license = "MIT"
 authors = [
-    {name = "Iulian Pavlov", email = "your.email@example.com"}
+    {name = "Iulian Pavlov", email = "iulianpavlov@icloud.com"}
 ]
 maintainers = [
-    {name = "Iulian Pavlov", email = "your.email@example.com"}
+    {name = "Iulian Pavlov", email = "iulianpavlov@icloud.com"}
 ]
 keywords = ["dependencies", "deprecated", "security", "python", "cli"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",

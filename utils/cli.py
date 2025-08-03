@@ -435,7 +435,7 @@ def clear_cache():
 def version():
     """Shows the version of the tool."""
     console.print("Deprecated Dependencies Checker")
-    console.print("Version: 1.0.0")
+    console.print("Version: 1.0.1")
     console.print("Author: Iulian Pavlov")
     console.print("License: MIT")
 

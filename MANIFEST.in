@@ -1,0 +1,25 @@
+include README.md
+include LICENSE
+include requirements.txt
+include CHANGELOG.md
+include CLI_GUIDE.md
+include TESTING_GUIDE.md
+
+recursive-include data *.yaml *.yml *.json
+recursive-include config *.yaml *.yml *.json
+
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.log
+global-exclude cache/*
+global-exclude logs/*
+global-exclude test_*.json
+global-exclude test_*.yaml
+global-exclude test_*.csv
+global-exclude db_export.*
+global-exclude test_report.*
+global-exclude test_export.* 
