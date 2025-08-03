@@ -27,7 +27,7 @@ def run_command(cmd, check=True):
 
 def clean_build():
     """Clean previous build artifacts."""
-    print("🧹 Cleaning previous build artifacts...")
+    print("Cleaning previous build artifacts...")
     commands = [
         "rm -rf build/",
         "rm -rf dist/",

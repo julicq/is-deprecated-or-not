@@ -1,66 +1,66 @@
-# Установка и настройка Deprecated Checker
+# Installation and Setup for Deprecated Checker
 
-## Быстрая установка
+## Quick Installation
 
-### 1. Клонирование репозитория
+### 1. Clone Repository
 ```bash
 git clone https://github.com/yourusername/deprecated-checker.git
 cd deprecated-checker
 ```
 
-### 2. Установка зависимостей
+### 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Проверка установки
+### 3. Verify Installation
 ```bash
 python deprecated_checker.py --help
 ```
 
-## Альтернативные способы установки
+## Alternative Installation Methods
 
-### Установка как пакет
+### Install as Package
 ```bash
 pip install -e .
 ```
 
-После установки можно использовать команду:
+After installation, you can use the command:
 ```bash
 deprecated-checker check
 ```
 
-### Установка в виртуальном окружении
+### Install in Virtual Environment
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
-# или
+# or
 venv\Scripts\activate     # Windows
 
 pip install -r requirements.txt
 ```
 
-## Настройка
+## Configuration
 
-### 1. Конфигурация базы данных
+### 1. Database Configuration
 
-База данных deprecated пакетов находится в файле `data/deprecated_packages.yaml`. 
-Вы можете добавить новые пакеты или изменить существующие:
+The deprecated packages database is located in `data/deprecated_packages.yaml`. 
+You can add new packages or modify existing ones:
 
 ```yaml
 package-name:
   deprecated_since: "2024-01-01"
-  reason: "Причина deprecation"
+  reason: "Deprecation reason"
   alternatives:
     - name: "alternative-package"
-      reason: "Почему лучше"
+      reason: "Why it's better"
       migration_guide: "https://example.com/migration"
 ```
 
-### 2. Настройка CI/CD
+### 2. CI/CD Setup
 
 #### GitHub Actions
-Создайте файл `.github/workflows/deprecated-check.yml`:
+Create file `.github/workflows/deprecated-check.yml`:
 
 ```yaml
 name: Check Deprecated Dependencies
@@ -90,7 +90,7 @@ jobs:
 ```
 
 #### GitLab CI
-Добавьте в `.gitlab-ci.yml`:
+Add to `.gitlab-ci.yml`:
 
 ```yaml
 check_dependencies:
@@ -105,7 +105,7 @@ check_dependencies:
 
 ### 3. Pre-commit hook
 
-Создайте файл `.pre-commit-config.yaml`:
+Create file `.pre-commit-config.yaml`:
 
 ```yaml
 repos:
@@ -119,7 +119,7 @@ repos:
         always_run: true
 ```
 
-Установите pre-commit:
+Install pre-commit:
 ```bash
 pip install pre-commit
 pre-commit install
@@ -127,7 +127,7 @@ pre-commit install
 
 ### 4. Makefile
 
-Создайте `Makefile` для удобства:
+Create `Makefile` for convenience:
 
 ```makefile
 .PHONY: check-deps check-deps-verbose check-deps-json update-db test
@@ -155,72 +155,72 @@ install-dev:
 	pip install -e .
 ```
 
-## Использование
+## Usage
 
-### Базовые команды
+### Basic Commands
 
 ```bash
-# Проверка текущей директории
+# Check current directory
 python deprecated_checker.py check
 
-# Проверка конкретной директории
+# Check specific directory
 python deprecated_checker.py check --path /path/to/project
 
-# Подробный вывод
+# Verbose output
 python deprecated_checker.py check --verbose
 
-# Экспорт в JSON
+# Export to JSON
 python deprecated_checker.py check --export json
 
-# Экспорт в YAML
+# Export to YAML
 python deprecated_checker.py check --export yaml
 
-# Сохранение отчета в файл
+# Save report to file
 python deprecated_checker.py check --export json --output report.json
 ```
 
-### Работа с базой данных
+### Database Operations
 
 ```bash
-# Просмотр всех deprecated пакетов
+# View all deprecated packages
 python deprecated_checker.py list-db
 
-# Поиск конкретного пакета
+# Search for specific package
 python deprecated_checker.py search requests
 ```
 
-## Поддерживаемые файлы
+## Supported Files
 
-Утилита автоматически обнаруживает и анализирует следующие файлы:
+The utility automatically detects and analyzes the following files:
 
 - `requirements.txt`
 - `requirements-dev.txt`
 - `setup.py`
 - `pyproject.toml`
 
-## Устранение неполадок
+## Troubleshooting
 
-### Проблема: "ModuleNotFoundError"
+### Issue: "ModuleNotFoundError"
 ```bash
-# Убедитесь, что все зависимости установлены
+# Make sure all dependencies are installed
 pip install -r requirements.txt
 ```
 
-### Проблема: "Permission denied"
+### Issue: "Permission denied"
 ```bash
-# Установите права на выполнение
+# Set execution permissions
 chmod +x deprecated_checker.py
 ```
 
-### Проблема: "No module named 'toml'"
+### Issue: "No module named 'toml'"
 ```bash
-# Установите недостающую зависимость
+# Install missing dependency
 pip install toml
 ```
 
-## Разработка
+## Development
 
-### Установка для разработки
+### Development Installation
 ```bash
 git clone https://github.com/yourusername/deprecated-checker.git
 cd deprecated-checker
@@ -228,22 +228,22 @@ pip install -e .
 pip install -r requirements.txt
 ```
 
-### Запуск тестов
+### Run Tests
 ```bash
 python test_checker.py
 ```
 
-### Добавление новых тестов
-Создайте новые тесты в файле `test_checker.py` или создайте отдельные файлы тестов.
+### Adding New Tests
+Create new tests in `test_checker.py` or create separate test files.
 
-## Лицензия
+## License
 
-MIT License - см. файл LICENSE для подробностей.
+MIT License - see LICENSE file for details.
 
-## Поддержка
+## Support
 
-Если у вас есть вопросы или проблемы:
+If you have questions or issues:
 
-1. Создайте issue в GitHub
-2. Проверьте документацию в README.md
-3. Посмотрите примеры в examples.md 
+1. Create an issue on GitHub
+2. Check documentation in README.md
+3. Look at examples in examples.md 

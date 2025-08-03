@@ -28,10 +28,10 @@ def test_version():
     print("Testing version command...")
     result = run_command("python utils/cli.py version")
     if result and result.returncode == 0:
-        print("✅ Version command works")
+        print("Version command works")
         return True
     else:
-        print("❌ Version command failed")
+        print("Version command failed")
         return False
 
 def test_stats():
@@ -39,10 +39,10 @@ def test_stats():
     print("Testing stats command...")
     result = run_command("python utils/cli.py stats")
     if result and result.returncode == 0 and "Total packages:" in result.stdout:
-        print("✅ Stats command works")
+        print("Stats command works")
         return True
     else:
-        print("❌ Stats command failed")
+        print("Stats command failed")
         return False
 
 def test_search():
@@ -50,10 +50,10 @@ def test_search():
     print("Testing search command...")
     result = run_command("python utils/cli.py search requests")
     if result and result.returncode == 0 and "deprecated" in result.stdout:
-        print("✅ Search command works")
+        print("Search command works")
         return True
     else:
-        print("❌ Search command failed")
+        print("Search command failed")
         return False
 
 def test_list_db():
@@ -61,10 +61,10 @@ def test_list_db():
     print("Testing list-db command...")
     result = run_command("python utils/cli.py list-db")
     if result and result.returncode == 0:
-        print("✅ List-db command works")
+        print("List-db command works")
         return True
     else:
-        print("❌ List-db command failed")
+        print("List-db command failed")
         return False
 
 def test_validate_db():
@@ -72,10 +72,10 @@ def test_validate_db():
     print("Testing validate-db command...")
     result = run_command("python utils/cli.py validate-db")
     if result and result.returncode == 0 and "valid" in result.stdout:
-        print("✅ Validate-db command works")
+        print("Validate-db command works")
         return True
     else:
-        print("❌ Validate-db command failed")
+        print("Validate-db command failed")
         return False
 
 def test_check_project():
@@ -83,10 +83,10 @@ def test_check_project():
     print("Testing project check...")
     result = run_command("python utils/cli.py check --path test_project")
     if result and result.returncode == 0:
-        print("✅ Project check works")
+        print("Project check works")
         return True
     else:
-        print("❌ Project check failed")
+        print("Project check failed")
         return False
 
 def test_export_json():
@@ -96,13 +96,13 @@ def test_export_json():
     if result and result.returncode == 0:
         # Check if file was created
         if Path("test_export.json").exists():
-            print("✅ JSON export works")
+            print("JSON export works")
             return True
         else:
-            print("❌ JSON export file not created")
+            print("JSON export file not created")
             return False
     else:
-        print("❌ JSON export failed")
+        print("JSON export failed")
         return False
 
 def test_export_yaml():
@@ -112,13 +112,13 @@ def test_export_yaml():
     if result and result.returncode == 0:
         # Check if file was created
         if Path("test_export.yaml").exists():
-            print("✅ YAML export works")
+            print("YAML export works")
             return True
         else:
-            print("❌ YAML export file not created")
+            print("YAML export file not created")
             return False
     else:
-        print("❌ YAML export failed")
+        print("YAML export failed")
         return False
 
 def test_scheduler():
@@ -128,9 +128,9 @@ def test_scheduler():
     # Test status
     result = run_command("python utils/cli.py scheduler status")
     if result and result.returncode == 0:
-        print("✅ Scheduler status works")
+        print("Scheduler status works")
     else:
-        print("❌ Scheduler status failed")
+        print("Scheduler status failed")
         return False
     
     return True
@@ -140,10 +140,10 @@ def test_clear_cache():
     print("Testing clear-cache command...")
     result = run_command("python utils/cli.py clear-cache")
     if result and result.returncode == 0:
-        print("✅ Clear-cache command works")
+        print("Clear-cache command works")
         return True
     else:
-        print("❌ Clear-cache command failed")
+        print("Clear-cache command failed")
         return False
 
 def test_export_db():
@@ -152,18 +152,18 @@ def test_export_db():
     result = run_command("python utils/cli.py export-db --format json --output db_export.json")
     if result and result.returncode == 0:
         if Path("db_export.json").exists():
-            print("✅ Database export works")
+            print("Database export works")
             return True
         else:
-            print("❌ Database export file not created")
+            print("Database export file not created")
             return False
     else:
-        print("❌ Database export failed")
+        print("Database export failed")
         return False
 
 def main():
     """Run all tests."""
-    print("🚀 Starting comprehensive CLI tests...")
+    print("Starting comprehensive CLI tests...")
     print("=" * 50)
     
     tests = [
@@ -192,10 +192,10 @@ def main():
     print(f"Test Results: {passed}/{total} tests passed")
     
     if passed == total:
-        print("🎉 All tests passed!")
+        print("All tests passed!")
         return 0
     else:
-        print("❌ Some tests failed!")
+        print("Some tests failed!")
         return 1
 
 if __name__ == "__main__":
