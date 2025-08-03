@@ -28,7 +28,7 @@ class DeprecatedPackageDB:
                 # Load from package data
                 import pkg_resources
                 try:
-                    with pkg_resources.resource_stream('deprecated_checker', 'data/deprecated_packages.yaml') as f:
+                    with pkg_resources.resource_stream('deprecated-checker', 'data/deprecated_packages.yaml') as f:
                         print(f"Loading from package data using resource_stream")
                         self.data = yaml.safe_load(f) or {}
                 except Exception as e:
