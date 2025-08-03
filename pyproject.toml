@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deprecated-checker"
-version = "1.0.22"
+version = "1.0.23"
 description = "Tool for checking deprecated dependencies in Python projects and suggesting alternatives"
 readme = "README.md"
 license = "MIT"
@@ -64,7 +64,7 @@ where = ["."]
 include = ["core*", "utils*"]
 
 [tool.setuptools.package-data]
-"core" = ["../data/*.yaml", "../data/*.yml", "../data/*.json"]
+"core" = ["*.yaml", "*.yml", "*.json"]
 
 [tool.black]
 line-length = 88
