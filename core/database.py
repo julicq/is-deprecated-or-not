@@ -28,27 +28,27 @@ class DeprecatedPackageDB:
                 # Method 1: Try importlib.resources with correct package structure
                 try:
                     import importlib.resources as resources
-                    # Try to load from the installed package
+                    # Try to load from the core module
                     try:
-                        with resources.open_text('deprecated_checker', 'data/deprecated_packages.yaml') as f:
+                        with resources.open_text('core', 'deprecated_packages.yaml') as f:
                             self.data = yaml.safe_load(f) or {}
-                            print(f"Successfully loaded database using importlib.resources from deprecated_checker")
+                            print(f"Successfully loaded database using importlib.resources from core")
                             return
                     except Exception as e:
-                        print(f"Failed to load from deprecated_checker using importlib.resources: {e}")
+                        print(f"Failed to load from core using importlib.resources: {e}")
                         
-                        # Try alternative approach - load from the package directory
+                        # Try alternative approach - load from the core directory
                         try:
-                            import deprecated_checker
-                            package_dir = Path(deprecated_checker.__file__).parent
-                            data_file = package_dir / "data" / "deprecated_packages.yaml"
+                            import core
+                            core_dir = Path(core.__file__).parent
+                            data_file = core_dir / "deprecated_packages.yaml"
                             if data_file.exists():
                                 with open(data_file, 'r', encoding='utf-8') as f:
                                     self.data = yaml.safe_load(f) or {}
-                                    print(f"Successfully loaded database from package directory: {data_file}")
+                                    print(f"Successfully loaded database from core directory: {data_file}")
                                     return
                         except Exception as e:
-                            print(f"Failed to load from package directory: {e}")
+                            print(f"Failed to load from core directory: {e}")
                             
                 except ImportError:
                     print("importlib.resources not available")
