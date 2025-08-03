@@ -25,52 +25,79 @@ class DeprecatedPackageDB:
         """Loads database from YAML file."""
         try:
             if self.db_path is None:
-                # Load from package data using importlib.resources (modern approach)
+                # Method 1: Try importlib.resources (modern approach)
                 try:
                     import importlib.resources as resources
-                    # Try different package names
                     package_names = ['deprecated_checker', 'core']
                     for package_name in package_names:
                         try:
                             with resources.open_text(package_name, 'data/deprecated_packages.yaml') as f:
                                 self.data = yaml.safe_load(f) or {}
+                                print(f"Successfully loaded database using importlib.resources from {package_name}")
                                 return
-                        except Exception:
+                        except Exception as e:
+                            print(f"Failed to load from {package_name} using importlib.resources: {e}")
                             continue
-                    
-                    # Fallback to pkg_resources for older Python versions
+                except ImportError:
+                    print("importlib.resources not available")
+                
+                # Method 2: Try pkg_resources with direct distribution access
+                try:
+                    import pkg_resources
                     try:
-                        import pkg_resources
-                        # Try to get the distribution and load data directly
                         dist = pkg_resources.get_distribution('deprecated-checker')
                         data_content = pkg_resources.resource_string('deprecated-checker', 'data/deprecated_packages.yaml')
                         self.data = yaml.safe_load(data_content) or {}
+                        print("Successfully loaded database using pkg_resources.get_distribution")
                         return
-                    except Exception:
-                        # Try alternative package names
+                    except Exception as e:
+                        print(f"Failed to load using pkg_resources.get_distribution: {e}")
+                        
+                        # Try alternative package names with pkg_resources
                         package_names = ['deprecated_checker', 'core']
                         for package_name in package_names:
                             try:
                                 with pkg_resources.resource_stream(package_name, 'data/deprecated_packages.yaml') as f:
                                     self.data = yaml.safe_load(f) or {}
+                                    print(f"Successfully loaded database using pkg_resources from {package_name}")
                                     return
-                            except Exception:
+                            except Exception as e:
+                                print(f"Failed to load from {package_name} using pkg_resources: {e}")
                                 continue
-                    
-                    # Fallback to relative path
+                except ImportError:
+                    print("pkg_resources not available")
+                
+                # Method 3: Fallback to relative path
+                try:
                     data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
                     with open(data_file, 'r', encoding='utf-8') as f:
                         self.data = yaml.safe_load(f) or {}
+                        print(f"Successfully loaded database from relative path: {data_file}")
+                        return
                 except Exception as e:
-                    print(f"Error loading database: {e}")
-                    # Fallback to relative path
-                    data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
-                    with open(data_file, 'r', encoding='utf-8') as f:
-                        self.data = yaml.safe_load(f) or {}
+                    print(f"Failed to load from relative path: {e}")
+                
+                # Method 4: Try to find the file in site-packages
+                try:
+                    import site
+                    for site_dir in site.getsitepackages():
+                        data_file = Path(site_dir) / "data" / "deprecated_packages.yaml"
+                        if data_file.exists():
+                            with open(data_file, 'r', encoding='utf-8') as f:
+                                self.data = yaml.safe_load(f) or {}
+                                print(f"Successfully loaded database from site-packages: {data_file}")
+                                return
+                except Exception as e:
+                    print(f"Failed to load from site-packages: {e}")
+                
+                # If all methods fail, create empty database
+                print("All loading methods failed, creating empty database")
+                self.data = {}
             else:
                 # Load from file path
                 with open(self.db_path, 'r', encoding='utf-8') as f:
                     self.data = yaml.safe_load(f) or {}
+                    print(f"Successfully loaded database from specified path: {self.db_path}")
         except Exception as e:
             print(f"Error loading database: {e}")
             self.data = {}
