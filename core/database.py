@@ -28,8 +28,22 @@ class DeprecatedPackageDB:
                 # Load from package data
                 import pkg_resources
                 try:
-                    with pkg_resources.resource_stream('deprecated-checker', 'data/deprecated_packages.yaml') as f:
-                        print(f"Loading from package data using resource_stream")
+                    # Try different package names
+                    package_names = ['deprecated-checker', 'deprecated_checker', 'core']
+                    for package_name in package_names:
+                        try:
+                            with pkg_resources.resource_stream(package_name, 'data/deprecated_packages.yaml') as f:
+                                print(f"Loading from package data using {package_name}")
+                                self.data = yaml.safe_load(f) or {}
+                                return
+                        except Exception as e:
+                            print(f"Failed to load from {package_name}: {e}")
+                            continue
+                    
+                    # Fallback to relative path
+                    data_file = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
+                    print(f"Loading from fallback path: {data_file}")
+                    with open(data_file, 'r', encoding='utf-8') as f:
                         self.data = yaml.safe_load(f) or {}
                 except Exception as e:
                     print(f"Failed to load from package data: {e}")
