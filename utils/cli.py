@@ -194,37 +194,47 @@ def display_text_report(result, checker, verbose: bool):
 @app.command()
 def list_db():
     """Shows all deprecated packages in the database."""
-    checker = DeprecatedChecker()
-    db = checker.db
-    
-    deprecated_packages = db.get_all_deprecated_packages()
-    
-    if not deprecated_packages:
-        console.print("[yellow]Database is empty[/yellow]")
-        return
-    
-    table = Table(
-        title="Deprecated packages in database",
-        show_header=True,
-        header_style="bold magenta"
-    )
-    table.add_column("Package", style="cyan")
-    table.add_column("Deprecated since", style="red")
-    table.add_column("Reason", style="yellow")
-    table.add_column("Alternatives", style="green")
-    
-    for package_name in deprecated_packages:
-        info = db.get_deprecated_info(package_name)
-        alternatives = [alt["name"] for alt in info.get("alternatives", [])]
+    try:
+        from core.database import DeprecatedPackageDB
+        db = DeprecatedPackageDB()
         
-        table.add_row(
-            package_name,
-            info.get("deprecated_since", "unknown"),
-            info.get("reason", "not specified"),
-            ", ".join(alternatives) if alternatives else "none"
+        if not db.data:
+            console.print("[yellow]Database is empty[/yellow]")
+            return
+        
+        # Create table
+        table = Table(
+            title="Deprecated packages in database",
+            show_header=True,
+            header_style="bold magenta"
         )
-    
-    console.print(table)
+        table.add_column("Package", style="cyan")
+        table.add_column("Deprecated since", style="red")
+        table.add_column("Reason", style="yellow")
+        table.add_column("Alternatives", style="green")
+        
+        # Add data
+        for package_name, package_data in db.data.items():
+            deprecated_since = package_data.get("deprecated_since", "unknown")
+            reason = package_data.get("reason", "not specified")
+            alternatives = package_data.get("alternatives", [])
+            
+            # Format alternatives
+            alt_names = [alt.get("name", "") for alt in alternatives]
+            alternatives_str = ", ".join(alt_names) if alt_names else "none"
+            
+            table.add_row(
+                package_name,
+                deprecated_since,
+                reason,
+                alternatives_str
+            )
+        
+        console.print(table)
+        
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
 
 
 @app.command()
@@ -371,7 +381,7 @@ def update_db(
                 all_data = collector.collect_all_data()
                 
                 # Save comprehensive database
-                output_path = Path(__file__).parent.parent / "data" / "comprehensive_deprecated_packages.yaml"
+                output_path = Path.cwd() / "data" / "comprehensive_deprecated_packages.yaml"
                 output_path.parent.mkdir(exist_ok=True)
                 
                 with open(output_path, 'w', encoding='utf-8') as f:
@@ -479,16 +489,35 @@ def validate_db():
 @app.command()
 def stats():
     """Shows database statistics."""
-    console.print("Database Statistics:")
-    
-    collector = DataCollector()
-    stats = collector.get_statistics()
-    
-    console.print(f"Total packages: {stats['total_packages']}")
-    console.print("Sources:")
-    for source, count in stats["sources"].items():
-        console.print(f"  {source}: {count} packages")
-    console.print(f"Last updated: {stats.get('last_updated', 'Unknown')}")
+    try:
+        from core.database import DeprecatedPackageDB
+        db = DeprecatedPackageDB()
+        
+        console.print("Database Statistics:")
+        console.print(f"Total packages: {len(db.data)}")
+        
+        # Count by source
+        sources = {}
+        for package_data in db.data.values():
+            source = package_data.get("source", "unknown")
+            sources[source] = sources.get(source, 0) + 1
+        
+        console.print("Sources:")
+        for source, count in sources.items():
+            console.print(f"  {source}: {count} packages")
+        
+        # Get last updated
+        last_updated = None
+        for package_data in db.data.values():
+            package_updated = package_data.get("last_updated")
+            if package_updated and (last_updated is None or package_updated > last_updated):
+                last_updated = package_updated
+        
+        console.print(f"Last updated: {last_updated or 'Unknown'}")
+        
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        sys.exit(1)
 
 
 @app.command()
