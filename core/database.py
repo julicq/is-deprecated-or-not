@@ -14,13 +14,8 @@ class DeprecatedPackageDB:
     
     def __init__(self, db_path: Optional[Path] = None):
         if db_path is None:
-            # Try to load from package data first
-            try:
-                from . import data
-                self.db_path = None  # Will load from package
-            except ImportError:
-                # Fallback to file path
-                self.db_path = Path(__file__).parent.parent / "data" / "deprecated_packages.yaml"
+            # Always try to load from package data first
+            self.db_path = None  # Will load from package
         else:
             self.db_path = db_path
         
