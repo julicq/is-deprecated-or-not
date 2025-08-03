@@ -16,6 +16,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive testing suite
 - Complete documentation
 
+## [1.0.1] - 2025-01-03
+
+### Fixed
+- Fixed GitHub Actions workflows permissions
+- Updated release workflow to use modern action
+- Added proper permissions for test and release workflows
+- Fixed tag name reference in release workflow
+
+### Technical
+- Switched from deprecated `actions/create-release@v1` to `softprops/action-gh-release@v1`
+- Added explicit permissions for workflow jobs
+- Improved reliability of CI/CD pipeline
+
 ### Features
 - **CLI Interface**: Beautiful command-line interface with Rich tables and panels
 - **Database Management**: Built-in database of deprecated packages with alternatives
