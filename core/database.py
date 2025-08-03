@@ -28,9 +28,8 @@ class DeprecatedPackageDB:
                 # Load from package data
                 import pkg_resources
                 try:
-                    data_file = pkg_resources.resource_filename('deprecated_checker', 'data/deprecated_packages.yaml')
-                    print(f"Loading from package data: {data_file}")
-                    with open(data_file, 'r', encoding='utf-8') as f:
+                    with pkg_resources.open_text('deprecated_checker', 'data/deprecated_packages.yaml') as f:
+                        print(f"Loading from package data using open_text")
                         self.data = yaml.safe_load(f) or {}
                 except Exception as e:
                     print(f"Failed to load from package data: {e}")
